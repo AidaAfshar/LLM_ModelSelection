@@ -1,0 +1,8 @@
+wandb
+matplotlib
+unsloth
+vllm
+IPython
+tensorboard
+transformers==4.56.2
+--no-deps trl==0.22.2

@@ -131,3 +131,8 @@ unsloth_compiled_cache/
 
 # Hugging Face / model caches
 .cache/
+
+# Local-only scripts
+script.sh
+modsel_script.sh
+llama3b_grpo_lora.py

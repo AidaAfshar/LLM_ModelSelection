@@ -124,6 +124,7 @@ outputs/
 runs/
 wandb/
 unsloth_compiled_cache/
+BD3RB.o*
 *.pt
 *.bin
 *.safetensors

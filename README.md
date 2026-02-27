@@ -30,4 +30,4 @@ This repository studies online model selection methods for post training LLMs wi
 
 ## Acknowledgment
 
-This codebase partially reuses GRPO implementation from Hugging Face TRL and Reasoning RL notebooks from Unsloth AI.
+This codebase partially reuses GRPO implementation from Hugging Face TRL and Reasoning RL codebase from Unsloth AI.

@@ -125,6 +125,7 @@ runs/
 wandb/
 unsloth_compiled_cache/
 BD3RB.o*
+grpo_trainer_lora_model_0/
 *.pt
 *.bin
 *.safetensors

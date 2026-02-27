@@ -75,15 +75,17 @@ def save_adapter_i(model, lora_states, i):
 
 
 def make_grpo_args(overrides: dict, args: Namespace):
+    optim_name = "adamw_torch" if getattr(args, "deterministic_mode", False) else "adamw_8bit"
     default_config = dict(
         learning_rate=args.lr,
         weight_decay=0.1,
         warmup_ratio=0.1,
         max_steps= args.H,
         lr_scheduler_type="constant",
-        optim="adamw_8bit",
+        optim=optim_name,
         logging_steps=1,
         per_device_train_batch_size=1,
+        dataloader_num_workers=0,
         gradient_accumulation_steps=4,
         num_generations=args.G,
         max_prompt_length=args.max_prompt_length,
@@ -92,6 +94,8 @@ def make_grpo_args(overrides: dict, args: Namespace):
         report_to= "none", #"wandb",
         output_dir="outputs",
         seed=args.seed,
+        data_seed=args.seed,
+        full_determinism=getattr(args, "deterministic_mode", False),
         save_steps=0,
     )
     default_config.update(overrides)
@@ -159,7 +163,6 @@ def train_episode(model, tokenizer, dataset, lora_states, base_index: int, cfg_o
     torch.cuda.empty_cache()
     
     return episode_reward_summary
-
 
 
 

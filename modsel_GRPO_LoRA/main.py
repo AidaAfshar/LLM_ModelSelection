@@ -1,5 +1,11 @@
+import os
 import random
 import numpy
+
+# Set these before importing torch/unsloth so CUDA/tokenizer backends pick them up.
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
 from unsloth import FastLanguageModel
 import torch
 from torch.utils.tensorboard import SummaryWriter
@@ -34,6 +40,8 @@ parser.add_argument("--max_seq_length", type=int, default=1024)
 parser.add_argument("--max_prompt_length", type=int, default=288)   # 287 + 1 just in case
 parser.add_argument("--d_min", type=int, default=1)
 parser.add_argument("--seed", type=int, default=42)
+parser.add_argument("--deterministic_mode", action="store_true",
+                    help="Prefer deterministic kernels/settings over maximum throughput without changing GRPO sampling hyperparameters.")
 
 args = parser.parse_args()
 
@@ -62,20 +70,26 @@ if M == 1:
     num_episodes = 300
 
 
-# seeding
+# reproducibility / deterministic setup
+os.environ["PYTHONHASHSEED"] = str(seed)
+
 random.seed(seed)
 numpy.random.seed(seed)
 torch.manual_seed(seed)
+torch.cuda.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 torch.backends.cudnn.deterministic = True
-
+torch.backends.cudnn.benchmark = False
+torch.backends.cuda.matmul.allow_tf32 = False
+torch.backends.cudnn.allow_tf32 = False
+torch.use_deterministic_algorithms(True)
 
 # ---- Load pretrained model and tokenizer ----
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name = "meta-llama/Llama-3.2-3B-Instruct",
     max_seq_length = max_seq_length,
     load_in_4bit = False, # False for LoRA 16bit
-    fast_inference = True, # Enable vLLM fast inference
+    fast_inference = not args.deterministic_mode, # vLLM path is faster but less reproducible
     max_lora_rank = lora_rank,
     gpu_memory_utilization = 0.9, # Reduce if out of memory
 )
@@ -91,11 +105,11 @@ model = FastLanguageModel.get_peft_model(
     ], # Remove QKVO if out of memory
     lora_alpha = lora_rank,
     use_gradient_checkpointing = "unsloth", # Enable long context finetuning
-    random_state = 3407,
+    random_state = seed,
 )
 
 
-# Initialize M adapter snapshots (all start identical)
+# Initialize M adapter snapshots 
 base_lora = cpuify_state(get_peft_model_state_dict(model))
 lora_states = [copy.deepcopy(base_lora) for _ in range(M)]
 
@@ -342,4 +356,3 @@ for ep in range(num_episodes):
 # )[0].outputs[0].text
 
 # print(output)
-

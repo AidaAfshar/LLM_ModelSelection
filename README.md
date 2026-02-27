@@ -8,7 +8,7 @@
 
 
 
-This repository studies online model selection methods for post training LLMs with GRPO+LoRA adapters. The pipeline trains multiple base models ,each with unique configuration, and uses a meta-selection strategy to choose which base model to train at each episode, then logs training and reward behavior for comparison across selection methods. For memory efficiency, each base model is identified with a unique LoRA adaptor and the pretrained model is shared.
+This repository studies online model selection methods for post training LLMs with GRPO+LoRA adapters. The pipeline trains multiple base models ,each with unique configuration, and uses a meta-selection strategy to choose which base model to train at each episode, then logs training and reward behavior for comparison across selection methods. For memory efficiency, each base model is identified with a unique LoRA adaptor and the pretrained model, in this case "meta-llama/Llama-3.2-3B-Instruct", is shared.
 
 
 ## Folder Structure
